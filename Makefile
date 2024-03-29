@@ -6,6 +6,20 @@ test:
 clean:
 	rm -rf .venv
 
+# HINT:
+# - black is not supported in py2!
+# - option --skip-string-normalization protects (among other things),
+#   against deleting the unicode prefix in Python 2
+
+black: venv
+	.venv/bin/python -m pip install --upgrade black
+	- .venv/bin/python -m black --skip-string-normalization --check --diff .
+	@echo "\n"
+	@echo "WARNING:"
+	@echo "  Not all modifications from black are compatible to Python v2.x !!!"
+	@echo "  Don't merge patches of Python-2 unicode like: u'lorem ..' --> 'lorem ..'"
+	@echo "\n"
+
 venv: clean
 	- asdf local python system
 	python --version
