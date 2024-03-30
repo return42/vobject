@@ -2,24 +2,24 @@
 
 from __future__ import print_function
 
+import sys
 import copy
 import codecs
 import logging
 import re
 import six
-import sys
 
 # ------------------------------------ Python 2/3 compatibility challenges  ----
 # Python 3 no longer has a basestring type, so....
 try:
-    basestring = basestring
+    basestring = basestring  # pylint: disable=redefined-builtin
 except NameError:
-    basestring = (str, bytes)
+    basestring = (str, bytes)  # pylint: disable=redefined-builtin
 
 # One more problem ... in python2 the str operator breaks on unicode
 # objects containing non-ascii characters
 try:
-    unicode
+    unicode  # pylint: disable=pointless-statement
 
     def str_(s):
         """
@@ -27,8 +27,7 @@ try:
         """
         if type(s) == unicode:
             return s.encode("utf-8")
-        else:
-            return str(s)
+        return str(s)
 
 except NameError:
 
@@ -108,6 +107,10 @@ class VBase(object):
     Current spec: 4.0 (http://tools.ietf.org/html/rfc6350)
     """
 
+    # names are initialized in the constructor of the inheritance
+    name = ""
+    encoded = False
+
     def __init__(self, group=None, *args, **kwds):
         super(VBase, self).__init__(*args, **kwds)
         self.group = group
@@ -129,7 +132,7 @@ class VBase(object):
             return self.behavior.validate(self, *args, **kwds)
         return True
 
-    def getChildren(self):
+    def getChildren(self):  # pylint: disable=no-self-use
         """
         Return an iterable containing the contents of the object.
         """
@@ -184,23 +187,21 @@ class VBase(object):
         """
         if self.isNative or not self.behavior or not self.behavior.hasNative:
             return self
-        else:
-            self_orig = copy.copy(self)
-            try:
-                return self.behavior.transformToNative(self)
-            except Exception as e:
-                # wrap errors in transformation in a ParseError
-                lineNumber = getattr(self, "lineNumber", None)
+        self_orig = copy.copy(self)
+        try:
+            return self.behavior.transformToNative(self)
+        except Exception as e:  # pylint: disable=broad-except
+            # wrap errors in transformation in a ParseError
+            lineNumber = getattr(self, "lineNumber", None)
 
-                if isinstance(e, ParseError):
-                    if lineNumber is not None:
-                        e.lineNumber = lineNumber
-                    raise
-                else:
-                    msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    msg = msg + " (" + str(self_orig) + ")"
-                    raise ParseError(msg, lineNumber)
+            if isinstance(e, ParseError):
+                if lineNumber is not None:
+                    e.lineNumber = lineNumber
+                raise
+            msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
+            msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+            msg = msg + " (" + str(self_orig) + ")"
+            raise ParseError(msg, lineNumber)
 
     def transformFromNative(self):
         """
@@ -218,17 +219,16 @@ class VBase(object):
         if self.isNative and self.behavior and self.behavior.hasNative:
             try:
                 return self.behavior.transformFromNative(self)
-            except Exception as e:
+            except Exception as e:  # pylint: disable=broad-except
                 # wrap errors in transformation in a NativeError
                 lineNumber = getattr(self, "lineNumber", None)
                 if isinstance(e, NativeError):
                     if lineNumber is not None:
                         e.lineNumber = lineNumber
                     raise
-                else:
-                    msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
-                    msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                    raise NativeError(msg, lineNumber)
+                msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
+                msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
+                raise NativeError(msg, lineNumber)
         else:
             return self
 
@@ -252,6 +252,7 @@ class VBase(object):
 
         Use self.behavior.serialize if behavior exists.
         """
+        # pylint: disable=logging-format-interpolation
         if not behavior:
             behavior = self.behavior
 
@@ -261,10 +262,10 @@ class VBase(object):
                     "serializing {0!s} with behavior {1!s}".format(self.name, behavior)
                 )
             return behavior.serialize(self, buf, lineLength, validate, *args, **kwargs)
-        else:
-            if DEBUG:
-                logger.debug("serializing {0!s} without behavior".format(self.name))
-            return defaultSerialize(self, buf, lineLength)
+
+        if DEBUG:
+            logger.debug("serializing {0!s} without behavior".format(self.name))
+        return defaultSerialize(self, buf, lineLength)
 
 
 def toVName(name, stripNum=0, upper=False):
@@ -347,7 +348,7 @@ class ContentLine(VBase):
             if "QUOTED-PRINTABLE" in self.params["ENCODING"]:
                 qp = True
                 self.params["ENCODING"].remove("QUOTED-PRINTABLE")
-                if len(self.params["ENCODING"]) == 0:
+                if not self.params["ENCODING"]:
                     del self.params["ENCODING"]
         if "QUOTED-PRINTABLE" in self.singletonparams:
             qp = True
@@ -368,8 +369,8 @@ class ContentLine(VBase):
                     ).decode("utf-8")
 
     @classmethod
-    def duplicate(clz, copyit):
-        newcopy = clz("", {}, "")
+    def duplicate(cls, copyit):
+        newcopy = cls("", {}, "")
         newcopy.copy(copyit)
         return newcopy
 
@@ -391,7 +392,7 @@ class ContentLine(VBase):
                 and (self.params == other.params)
                 and (self.value == other.value)
             )
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             return False
 
     def __getattr__(self, name):
@@ -404,10 +405,10 @@ class ContentLine(VBase):
         try:
             if name.endswith("_param"):
                 return self.params[toVName(name, 6, True)][0]
-            elif name.endswith("_paramlist"):
+            if name.endswith("_paramlist"):
                 return self.params[toVName(name, 10, True)]
-            else:
-                raise AttributeError(name)
+            raise AttributeError(name)
+
         except KeyError:
             raise AttributeError(name)
 
@@ -459,7 +460,7 @@ class ContentLine(VBase):
     def __str__(self):
         try:
             return "<{0}{1}{2}>".format(self.name, self.params, self.valueRepr())
-        except UnicodeEncodeError as e:
+        except UnicodeEncodeError:
             return "<{0}{1}{2}>".format(
                 self.name, self.params, self.valueRepr().encode("utf-8")
             )
@@ -540,7 +541,7 @@ class Component(VBase):
         if self.name or self.useBegin:
             if self.name == name:
                 return
-            raise VObjectError("This component already has a PROFILE or " "uses BEGIN.")
+            raise VObjectError("This component already has a PROFILE or uses BEGIN.")
         self.name = name.upper()
 
     def __getattr__(self, name):
@@ -557,8 +558,7 @@ class Component(VBase):
         try:
             if name.endswith("_list"):
                 return self.contents[toVName(name, 5)]
-            else:
-                return self.contents[toVName(name)][0]
+            return self.contents[toVName(name)][0]
         except KeyError:
             raise AttributeError(name)
 
@@ -606,8 +606,7 @@ class Component(VBase):
         child = self.contents.get(toVName(childName))
         if child is None:
             return default
-        else:
-            return child[childNumber].value
+        return child[childNumber].value
 
     def add(self, objOrName, group=None):
         """
@@ -626,6 +625,7 @@ class Component(VBase):
         else:
             name = objOrName.upper()
             try:
+                # pylint: disable=redefined-builtin
                 id = self.behavior.knownChildren[name][2]
                 behavior = getBehavior(name, id)
                 if behavior.isComponent:
@@ -651,7 +651,7 @@ class Component(VBase):
         if named:
             try:
                 named.remove(obj)
-                if len(named) == 0:
+                if not named:
                     del self.contents[obj.name.lower()]
             except ValueError:
                 pass
@@ -679,8 +679,9 @@ class Component(VBase):
     def sortChildKeys(self):
         try:
             first = [s for s in self.behavior.sortFirst if s in self.contents]
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             first = []
+        # pylint: disable=consider-iterating-dictionary
         return first + sorted(k for k in self.contents.keys() if k not in first)
 
     def getSortedChildren(self):
@@ -720,8 +721,7 @@ class Component(VBase):
     def __str__(self):
         if self.name:
             return "<{0}| {1}>".format(self.name, self.getSortedChildren())
-        else:
-            return u"<*unnamed*| {0}>".format(self.getSortedChildren())
+        return u"<*unnamed*| {0}>".format(self.getSortedChildren())
 
     def __repr__(self):
         return self.__str__()
@@ -735,7 +735,7 @@ class Component(VBase):
 
 
 class VObjectError(Exception):
-    def __init__(self, msg, lineNumber=None):
+    def __init__(self, msg, lineNumber=None):  # pylint: disable=super-init-not-called
         self.msg = msg
         if lineNumber is not None:
             self.lineNumber = lineNumber
@@ -743,8 +743,7 @@ class VObjectError(Exception):
     def __str__(self):
         if hasattr(self, "lineNumber"):
             return "At line {0!s}: {1!s}".format(self.lineNumber, self.msg)
-        else:
-            return repr(self.msg)
+        return repr(self.msg)
 
 
 class ParseError(VObjectError):
@@ -838,7 +837,7 @@ def parseParams(string):
     """
     Parse parameters
     """
-    all = params_re.findall(string)
+    all = params_re.findall(string)  # pylint: disable=redefined-builtin
     allParameters = []
     for tup in all:
         paramList = [tup[0]]  # tup looks like (name, valuesString)
@@ -921,6 +920,7 @@ def getLogicalLines(fp, allowQP=True):
      format.
     Line 2: Line 2 is a new line, it does not start with whitespace.
     """
+    # pylint: disable=too-many-branches
     if not allowQP:
         val = fp.read(-1)
 
@@ -941,9 +941,8 @@ def getLogicalLines(fp, allowQP=True):
             line = fp.readline()
             if line == "":
                 break
-            else:
-                line = line.rstrip(CRLF)
-                lineNumber += 1
+            line = line.rstrip(CRLF)
+            lineNumber += 1
             if line.rstrip() == "":
                 if logicalLine.tell() > 0:
                     yield logicalLine.getvalue(), lineStartNumber
@@ -993,7 +992,7 @@ def dquoteEscape(param):
     return param
 
 
-def foldOneLine(outbuf, input, lineLength=75):
+def foldOneLine(outbuf, input, lineLength=75):  # pylint: disable=redefined-builtin
     """
     Folding line procedure that ensures multi-byte utf-8 sequences are not
     broken across lines
@@ -1004,7 +1003,7 @@ def foldOneLine(outbuf, input, lineLength=75):
         # Optimize for unfolded line case
         try:
             outbuf.write(bytes(input, "UTF-8"))
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # fall back on py2 syntax
             outbuf.write(input)
 
@@ -1021,7 +1020,7 @@ def foldOneLine(outbuf, input, lineLength=75):
             if counter + size > lineLength:
                 try:
                     outbuf.write(bytes("\r\n ", "UTF-8"))
-                except Exception:
+                except Exception:  # pylint: disable=broad-except
                     # fall back on py2 syntax
                     outbuf.write("\r\n ")
 
@@ -1038,7 +1037,7 @@ def foldOneLine(outbuf, input, lineLength=75):
             start += 1
     try:
         outbuf.write(bytes("\r\n", "UTF-8"))
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         # fall back on py2 syntax
         outbuf.write("\r\n")
 
@@ -1047,6 +1046,7 @@ def defaultSerialize(obj, buf, lineLength):
     """
     Encode and fold obj and its children, write to buf or return a string.
     """
+    # pylint: disable=too-many-branches
     outbuf = buf or six.StringIO()
 
     if isinstance(obj, Component):
@@ -1100,16 +1100,14 @@ class Stack:
         return len(self.stack)
 
     def top(self):
-        if len(self) == 0:
+        if not self.stack:
             return None
-        else:
-            return self.stack[-1]
+        return self.stack[-1]
 
     def topName(self):
-        if len(self) == 0:
+        if not self.stack:
             return None
-        else:
-            return self.stack[-1].name
+        return self.stack[-1].name
 
     def modifyTop(self, item):
         top = self.top()
@@ -1137,6 +1135,7 @@ def readComponents(
     """
     Generate one Component at a time from a stream.
     """
+    # pylint: disable=too-many-branches,too-many-locals,too-many-statements
     if isinstance(streamOrString, basestring):
         stream = six.StringIO(streamOrString)
     else:
@@ -1155,6 +1154,7 @@ def readComponents(
                         msg = "Skipped line {lineNumber}, message: {msg}"
                     else:
                         msg = "Skipped a line, message: {msg}"
+                    # pylint: disable=logging-format-interpolation
                     logger.error(
                         msg.format(**{"lineNumber": e.lineNumber, "msg": str(e)})
                     )
@@ -1171,7 +1171,7 @@ def readComponents(
                     stack.push(Component())
                 stack.top().setProfile(vline.value)
             elif vline.name == "END":
-                if len(stack) == 0:
+                if not stack:
                     err = "Attempted to end the {0} component but it was never opened"
                     raise ParseError(err.format(vline.value), n)
 
@@ -1206,7 +1206,7 @@ def readComponents(
             yield stack.pop()
 
     except ParseError as e:
-        e.input = streamOrString
+        e.input = streamOrString  # pylint: disable=attribute-defined-outside-init
         raise
 
 
@@ -1223,7 +1223,9 @@ def readOne(
 __behaviorRegistry = {}
 
 
-def registerBehavior(behavior, name=None, default=False, id=None):
+def registerBehavior(
+    behavior, name=None, default=False, id=None
+):  # pylint: disable=redefined-builtin
     """
     Register the given behavior.
 
@@ -1243,7 +1245,7 @@ def registerBehavior(behavior, name=None, default=False, id=None):
         __behaviorRegistry[name] = [(id, behavior)]
 
 
-def getBehavior(name, id=None):
+def getBehavior(name, id=None):  # pylint: disable=redefined-builtin
     """
     Return a matching behavior if it exists, or None.
 
@@ -1260,7 +1262,7 @@ def getBehavior(name, id=None):
     return None
 
 
-def newFromBehavior(name, id=None):
+def newFromBehavior(name, id=None):  # pylint: disable=redefined-builtin
     """
     Given a name, return a behaviored ContentLine or Component.
     """

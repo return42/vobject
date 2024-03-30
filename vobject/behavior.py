@@ -44,6 +44,8 @@ class Behavior(object):
         Whether or not vCard style group prefixes are allowed.
     """
 
+    # pylint: disable=unused-argument
+
     name = ""
     description = ""
     versionString = ""
@@ -78,9 +80,11 @@ class Behavior(object):
         if not cls.allowGroup and obj.group is not None:
             err = "{0} has a group, but this object doesn't support groups".format(obj)
             raise base.VObjectError(err)
+
         if isinstance(obj, base.ContentLine):
             return cls.lineValidate(obj, raiseException, complainUnrecognized)
-        elif isinstance(obj, base.Component):
+
+        if isinstance(obj, base.Component):
             count = {}
             for child in obj.getChildren():
                 if not child.validate(raiseException, complainUnrecognized):
@@ -99,9 +103,9 @@ class Behavior(object):
                         raise base.ValidateError(m.format(cls.name, val[1], key))
                     return False
             return True
-        else:
-            err = "{0} is not a Component or Contentline".format(obj)
-            raise base.VObjectError(err)
+
+        err = "{0} is not a Component or Contentline".format(obj)
+        raise base.VObjectError(err)
 
     @classmethod
     def lineValidate(cls, line, raiseException, complainUnrecognized):
@@ -152,7 +156,6 @@ class Behavior(object):
         Default is to call base.defaultSerialize.
 
         """
-
         cls.generateImplicitParameters(obj)
         if validate:
             cls.validate(obj, raiseException=True)

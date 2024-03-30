@@ -20,6 +20,21 @@ black: venv
 	@echo "  Don't merge patches of Python-2 unicode like: u'lorem ..' --> 'lorem ..'"
 	@echo "\n"
 
+# HINT: pylint uses the AST (https://docs.python.org/3/library/ast.html) from
+# the python interpreter.  To lint a py2 code base a Python 2 interpreter is
+# needed.
+
+# pylint in py3.x: all rules are taken from .pylintrc
+pylint: venv
+	.venv/bin/python -m pylint --output-format=parseable ./vobject/ setup.py tests.py
+
+# pylint in py2.7: addtional to the rules from .pylintrc disable messages which
+# are only relevant in python 3
+pylint2.7: venv2.7
+	.venv/bin/python -m pylint --output-format=parseable \
+		--disable=bad-continuation,superfluous-parens,old-style-class \
+		./vobject/ setup.py tests.py
+
 venv: clean
 	- asdf local python system
 	@python --version
@@ -38,4 +53,4 @@ venv2.7: clean
 	.venv/bin/pip install -r requirements-dev.txt
 
 
-.PHONY: test clean venv venv2.7 black
+.PHONY: test clean venv venv2.7 black pylint pylint2.7

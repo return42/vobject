@@ -1,4 +1,4 @@
-"""
+r"""
 hCalendar: A microformat for serializing iCalendar data
           (http://microformats.org/wiki/hcalendar)
 
@@ -28,9 +28,9 @@ and an equivalent event in hCalendar format with various elements optimized appr
 </span>
 """
 
-import six
-
 from datetime import date, datetime, timedelta
+
+import six
 
 from .base import CRLF, registerBehavior
 from .icalendar import VCalendar2_0
@@ -44,7 +44,7 @@ class HCalendar(VCalendar2_0):
         """
         Serialize iCalendar to HTML using the hCalendar microformat (http://microformats.org/wiki/hcalendar)
         """
-
+        # pylint: disable=too-many-locals, too-many-branches
         outbuf = buf or six.StringIO()
         level = 0  # holds current indentation level
         tabwidth = 3
