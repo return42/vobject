@@ -1,14 +1,13 @@
 """Translate an ics file's events to a different timezone."""
 
 from optparse import OptionParser
+from datetime import datetime
 from vobject import icalendar, base
 
 try:
-    import PyICU
-except:
+    import PyICU  # pylint: disable=import-error
+except:  # pylint: disable=bare-except
     PyICU = None
-
-from datetime import datetime
 
 
 def change_tz(cal, new_timezone, default, utc_only=False, utc_tz=icalendar.utc):

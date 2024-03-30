@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=line-too-long
 
 from __future__ import print_function
 
 import datetime
-import dateutil
 import re
 import sys
 import unittest
 import json
+import dateutil
 
 from dateutil.tz import tzutc
 from dateutil.rrule import rrule, rruleset, WEEKLY, MONTHLY
@@ -709,7 +710,9 @@ class TestIcalendar(unittest.TestCase):
         apple = tzs.get("America/Montreal")
         ev.dtstart.value = datetime.datetime(2005, 10, 12, 9, tzinfo=apple)
 
-    def test_pytz_timezone_serializing(self):
+    def test_pytz_timezone_serializing(
+        self,
+    ):  # pylint: disable=inconsistent-return-statements
         """
         Serializing with timezones from pytz test
         """
@@ -742,6 +745,7 @@ class TestIcalendar(unittest.TestCase):
             unregister_tzid(tzname)
             tz = icalendar.TimezoneComponent(tzinfo=pytz.timezone(tzname))
             tz.serialize()
+        return None
 
     def test_freeBusy(self):
         """
@@ -1012,14 +1016,12 @@ class TestCompatibility(unittest.TestCase):
         vobjs = base.readComponents(ics_str, allowQP=True)
         for vo in vobjs:
             self.assertIsNotNone(vo)
-        return
 
     def test_radicale_0827(self):
         ics_str = get_test_file("radicale-0827.ics")
         vobjs = base.readComponents(ics_str, allowQP=True)
         for vo in vobjs:
             self.assertIsNotNone(vo)
-        return
 
 
 if __name__ == "__main__":

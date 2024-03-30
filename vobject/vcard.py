@@ -3,8 +3,8 @@
 import codecs
 
 from . import behavior
-
-from .base import ContentLine, registerBehavior, backslashEscape, basestring, str_
+from .base import ContentLine, registerBehavior, backslashEscape, str_
+from .base import basestring  # pylint: disable=redefined-builtin
 from .icalendar import stringToTextValues
 
 
@@ -48,7 +48,7 @@ class Name(object):
                 and self.prefix == other.prefix
                 and self.suffix == other.suffix
             )
-        except:
+        except:  # pylint: disable=bare-except
             return False
 
 
@@ -107,7 +107,7 @@ class Address(object):
                 and self.code == other.code
                 and self.country == other.country
             )
-        except:
+        except:  # pylint: disable=bare-except
             return False
 
 
@@ -261,8 +261,7 @@ def toListOrString(string):
     stringList = stringToTextValues(string)
     if len(stringList) == 1:
         return stringList[0]
-    else:
-        return stringList
+    return stringList
 
 
 def splitFields(string):

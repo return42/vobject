@@ -1,5 +1,7 @@
 """Definitions and behavior for iCalendar, also known as vCalendar 2.0"""
 
+# pylint: disable=deprecated-lambda, too-many-lines
+
 from __future__ import print_function
 
 import datetime
@@ -16,7 +18,7 @@ try:
     import pytz
 except ImportError:
 
-    class Pytz:
+    class Pytz:  # pylint: disable=no-init
         """fake pytz module (pytz is not required)"""
 
         class AmbiguousTimeError(Exception):
@@ -81,7 +83,7 @@ def getTzid(tzid, smart=True):
     """
     Return the tzid if it exists, or None.
     """
-    tz = __tzidMap.get(toUnicode(tzid), None)
+    tz = __tzidMap.get(toUnicode(tzid), None)  # pylint: disable=redefined-outer-name
     if smart and tzid and not tz:
         try:
             from pytz import timezone, UnknownTimeZoneError
@@ -133,11 +135,11 @@ class TimezoneComponent(Component):
             self.useBegin = True
 
     @classmethod
-    def registerTzinfo(obj, tzinfo):
+    def registerTzinfo(cls, tzinfo):
         """
         Register tzinfo if it's not already registered, return its tzid.
         """
-        tzid = obj.pickTzid(tzinfo)
+        tzid = cls.pickTzid(tzinfo)
         if tzid and not getTzid(tzid, False):
             registerTzid(tzid, tzinfo)
         return tzid
@@ -154,9 +156,9 @@ class TimezoneComponent(Component):
             "tzid",
         )
         # serialize encodes as utf-8, cStringIO will leave utf-8 alone
-        buffer = six.StringIO()
+        buffer = six.StringIO()  # pylint: disable=redefined-builtin
         # allow empty VTIMEZONEs
-        if len(self.contents) == 0:
+        if not self.contents:
             return None
 
         def customSerialize(obj):
@@ -188,6 +190,8 @@ class TimezoneComponent(Component):
         - tzinfo classes dst method always treats times that could be in either
           offset as being in the later regime
         """
+        # pylint: disable=too-many-branches, attribute-defined-outside-init
+        # pylint: disable=too-many-statements,too-many-locals
 
         def fromLastWeek(dt):
             """
@@ -208,9 +212,13 @@ class TimezoneComponent(Component):
         working = {"daylight": None, "standard": None}
 
         # rule may be based on nth week of the month or the nth from the last
-        for year in range(start, end + 1):
+        for year in range(start, end + 1):  # pylint: disable=too-many-nested-blocks
+
             newyear = datetime.datetime(year, 1, 1)
             for transitionTo in "daylight", "standard":
+
+                # pylint: disable=unsubscriptable-object,unsupported-assignment-operation
+
                 transition = getTransition(transitionTo, year, tzinfo)
                 oldrule = working[transitionTo]
 
@@ -372,7 +380,7 @@ class TimezoneComponent(Component):
 
         # try tzical's tzid key
         elif hasattr(tzinfo, "_tzid"):
-            return toUnicode(tzinfo._tzid)
+            return toUnicode(tzinfo._tzid)  # pylint: disable=protected-access
         else:
             # return tzname for standard (non-DST) time
             notDST = datetime.timedelta(0)
@@ -433,6 +441,7 @@ class RecurringComponent(Component):
         created in these cases, and count isn't updated, so dateutil may list
         a spurious occurrence.
         """
+        # pylint: disable=protected-access, too-many-branches, too-many-locals, too-many-statements
         rruleset = None
         for name in DATESANDRULES:
             addfunc = None
@@ -558,25 +567,20 @@ class RecurringComponent(Component):
                         if name == "rrule":
                             if rruleset._rrule[-1][0] != adddtstart:
                                 rruleset.rdate(adddtstart)
-                                added = True
                                 if rruleset._rrule[-1]._count is not None:
                                     rruleset._rrule[-1]._count -= 1
-                            else:
-                                added = False
                         elif name == "rdate":
                             if rruleset._rdate[0] != adddtstart:
                                 rruleset.rdate(adddtstart)
-                                added = True
-                            else:
-                                added = False
                     except IndexError:
                         # it's conceivable that an rrule has 0 datetimes
-                        added = False
+                        pass
 
         return rruleset
 
     def setrruleset(self, rruleset):
         # Get DTSTART from component (or DUE if no DTSTART in a VTODO)
+        # pylint: disable=protected-access, too-many-branches, too-many-statements, too-many-locals
         try:
             dtstart = self.dtstart.value
         except (AttributeError, KeyError):
@@ -603,7 +607,8 @@ class RecurringComponent(Component):
                     setlist.remove(dtstart)
                 if isDate:
                     setlist = [dt.date() for dt in setlist]
-                if len(setlist) > 0:
+                if setlist:
+                    # pylint: disable=attribute-defined-outside-init
                     self.add(name).value = setlist
             elif name in RULENAMES:
                 for rule in setlist:
@@ -638,10 +643,10 @@ class RecurringComponent(Component):
                     if rule._bynweekday is not None:
                         days.extend(n + WEEKDAYS[day] for day, n in rule._bynweekday)
 
-                    if len(days) > 0:
+                    if days:
                         values["BYDAY"] = days
 
-                    if rule._bymonthday is not None and len(rule._bymonthday) > 0:
+                    if rule._bymonthday:
                         if not (
                             rule._freq <= rrule.MONTHLY
                             and len(rule._bymonthday) == 1
@@ -650,15 +655,15 @@ class RecurringComponent(Component):
                             # ignore bymonthday if it's generated by dateutil
                             values["BYMONTHDAY"] = [str(n) for n in rule._bymonthday]
 
-                    if rule._bynmonthday is not None and len(rule._bynmonthday) > 0:
+                    if rule._bynmonthday:
                         values.setdefault("BYMONTHDAY", []).extend(
                             str(n) for n in rule._bynmonthday
                         )
 
-                    if rule._bymonth is not None and len(rule._bymonth) > 0:
+                    if rule._bymonth:
                         if (
                             rule._byweekday is not None
-                            or len(rule._bynweekday or ()) > 0
+                            or rule._bynweekday
                             or not (
                                 rule._freq == rrule.YEARLY
                                 and len(rule._bymonth) == 1
@@ -681,6 +686,7 @@ class RecurringComponent(Component):
                         buf.write("=")
                         buf.write(",".join(paramvals))
 
+                    # pylint: disable=attribute-defined-outside-init
                     self.add(name).value = buf.getvalue()
 
     rruleset = property(getrruleset, setrruleset)
@@ -880,8 +886,7 @@ class DateOrDateTimeBehavior(behavior.Behavior):
             obj.value_param = "DATE"
             obj.value = dateToString(obj.value)
             return obj
-        else:
-            return DateTimeBehavior.transformFromNative(obj)
+        return DateTimeBehavior.transformFromNative(obj)
 
 
 class MultiDateBehavior(behavior.Behavior):
@@ -1024,7 +1029,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                     table[obj.tzid_param] = 1
                 else:
                     if type(obj.value) == list:
-                        for item in obj.value:
+                        for _ in obj.value:
                             tzinfo = getattr(obj.value, "tzinfo", None)
                             tzid = TimezoneComponent.registerTzinfo(tzinfo)
                             if tzid:
@@ -1040,7 +1045,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
 
         findTzids(obj, tzidsUsed)
         oldtzids = [toUnicode(x.tzid.value) for x in getattr(obj, "vtimezone_list", [])]
-        for tzid in tzidsUsed.keys():
+        for tzid in tzidsUsed.keys():  # pylint: disable=consider-iterating-dictionary
             tzid = toUnicode(tzid)
             if tzid != u"UTC" and tzid not in oldtzids:
                 obj.add(TimezoneComponent(tzinfo=getTzid(tzid)))
@@ -1056,16 +1061,14 @@ class VCalendar2_0(VCalendarComponentBehavior):
         Default is to call base.defaultSerialize.
 
         """
+        # pylint: disable=too-many-locals
 
         cls.generateImplicitParameters(obj)
         if validate:
             cls.validate(obj, raiseException=True)
+        undoTransform = False
         if obj.isNative:
-            transformed = obj.transformFromNative()
             undoTransform = True
-        else:
-            transformed = obj
-            undoTransform = False
         out = None
         outbuf = buf or six.StringIO()
         if obj.group is None:
@@ -1088,7 +1091,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                 for s in cls.sortFirst
                 if s in obj.contents and isinstance(obj.contents[s][0], Component)
             ]
-        except Exception:
+        except Exception:  # pylint:disable=broad-except
             first_props = first_components = []
             # first_components = []
 
@@ -1420,7 +1423,7 @@ class VAlarm(VCalendarComponentBehavior):
             obj.add("trigger").value = datetime.timedelta(0)
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(cls, obj, raiseException, *args):  # pylint: disable=unused-argument
         """
         # TODO
         if obj.contents.has_key('dtend') and obj.contents.has_key('duration'):
@@ -1668,8 +1671,10 @@ class PeriodBehavior(behavior.Behavior):
             transformed = []
             for tup in obj.value:
                 transformed.append(periodToString(tup, cls.forceUTC))
-            if len(transformed) > 0:
-                tzid = TimezoneComponent.registerTzinfo(tup[0].tzinfo)
+            if transformed:
+                tzid = TimezoneComponent.registerTzinfo(
+                    tup[0].tzinfo
+                )  # pylint: disable=undefined-loop-variable
                 if not cls.forceUTC and tzid is not None:
                     obj.tzid_param = tzid
 
@@ -1743,10 +1748,9 @@ def numToDigits(num, places):
     s = str(num)
     if len(s) < places:
         return ("0" * (places - len(s))) + s
-    elif len(s) > places:
+    if len(s) > places:
         return s[len(s) - places :]
-    else:
-        return s
+    return s
 
 
 def timedeltaToString(delta):
@@ -1870,7 +1874,7 @@ def stringToDateTime(s, tzinfo=None):
                 tzinfo = getTzid("UTC")
     except:
         raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s))
-    year = year and year or 2000
+    year = year if year else 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # PyTZ case
         return tzinfo.localize(
             datetime.datetime(year, month, day, hour, minute, second)
@@ -1887,6 +1891,8 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
     """
     Returns list of strings.
     """
+    # pylint: disable=too-many-branches, protected-access
+
     if charList is None:
         charList = escapableCharList
 
@@ -1908,8 +1914,8 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
-        except:
+            charIndex, char = next(charIterator)  # pylint: disable=unused-variable
+        except:  # pylint: disable=bare-except
             char = "eof"
 
         if state == "read normal":
@@ -1939,7 +1945,7 @@ def stringToTextValues(s, listSeparator=",", charList=None, strict=False):
                 current.append("\\" + char)
 
         elif state == "end":  # an end state
-            if len(current) or len(results) == 0:
+            if current or not results:
                 current = "".join(current)
                 results.append(current)
             return results
@@ -1957,6 +1963,7 @@ def stringToDurations(s, strict=False):
     Returns list of timedelta objects.
     """
 
+    # pylint: disable=too-many-branches, too-many-statements, too-many-locals
     def makeTimedelta(sign, week, day, hour, minute, sec):
         if sign == "-":
             sign = -1
@@ -1992,8 +1999,8 @@ def stringToDurations(s, strict=False):
 
     while True:
         try:
-            charIndex, char = next(charIterator)
-        except:
+            charIndex, char = next(charIterator)  # pylint: disable=unused-variable
+        except:  # pylint: disable=bare-except
             char = "eof"
 
         if state == "start":
@@ -2062,6 +2069,7 @@ def stringToDurations(s, strict=False):
                 error("got unexpected character reading in duration: " + s)
 
         elif state == "end":  # an end state
+            # pylint: disable=too-many-boolean-expressions
             if sign or week or day or hour or minute or sec:
                 durations.append(makeTimedelta(sign, week, day, hour, minute, sec))
             return durations
@@ -2085,16 +2093,19 @@ def parseDtstart(contentline, allowSignatureMismatch=False):
     """
     tzinfo = getTzid(getattr(contentline, "tzid_param", None))
     valueParam = getattr(contentline, "value_param", "DATE-TIME").upper()
+
+    ret_val = None
     if valueParam == "DATE":
-        return stringToDate(contentline.value)
+        ret_val = stringToDate(contentline.value)
     elif valueParam == "DATE-TIME":
         try:
-            return stringToDateTime(contentline.value, tzinfo)
-        except:
+            ret_val = stringToDateTime(contentline.value, tzinfo)
+        except:  # pylint: disable=bare-except
             if allowSignatureMismatch:
-                return stringToDate(contentline.value)
+                ret_val = stringToDate(contentline.value)
             else:
                 raise
+    return ret_val
 
 
 def stringToPeriod(s, tzinfo=None):
@@ -2104,8 +2115,7 @@ def stringToPeriod(s, tzinfo=None):
     if isDuration(valEnd):  # period-start = date-time "/" dur-value
         delta = stringToDurations(valEnd)[0]
         return (start, delta)
-    else:
-        return (start, stringToDateTime(valEnd, tzinfo))
+    return (start, stringToDateTime(valEnd, tzinfo))
 
 
 def getTransition(transitionTo, year, tzinfo):
@@ -2134,10 +2144,10 @@ def getTransition(transitionTo, year, tzinfo):
         days = range(1, 32)
         hours = range(0, 24)
         if month is None:
-            for month in months:
+            for month in months:  # pylint: disable=redefined-argument-from-local
                 yield datetime.datetime(year, month, 1)
         elif day is None:
-            for day in days:
+            for day in days:  # pylint: disable=redefined-argument-from-local
                 try:
                     yield datetime.datetime(year, month, day)
                 except ValueError:
@@ -2171,21 +2181,20 @@ def getTransition(transitionTo, year, tzinfo):
     monthDt = firstTransition(generateDates(year), test)
     if monthDt is None:
         return newyear
-    elif monthDt.month == 12:
+    if monthDt.month == 12:
         return None
-    else:
-        # there was a good transition somewhere in a non-December month
-        month = monthDt.month
-        day = firstTransition(generateDates(year, month), test).day
-        uncorrected = firstTransition(generateDates(year, month, day), test)
-        if transitionTo == "standard":
-            # assuming tzinfo.dst returns a new offset for the first
-            # possible hour, we need to add one hour for the offset change
-            # and another hour because firstTransition returns the hour
-            # before the transition
-            return uncorrected + datetime.timedelta(hours=2)
-        else:
-            return uncorrected + datetime.timedelta(hours=1)
+
+    # there was a good transition somewhere in a non-December month
+    month = monthDt.month
+    day = firstTransition(generateDates(year, month), test).day
+    uncorrected = firstTransition(generateDates(year, month, day), test)
+    if transitionTo == "standard":
+        # assuming tzinfo.dst returns a new offset for the first
+        # possible hour, we need to add one hour for the offset change
+        # and another hour because firstTransition returns the hour
+        # before the transition
+        return uncorrected + datetime.timedelta(hours=2)
+    return uncorrected + datetime.timedelta(hours=1)
 
 
 def tzinfo_eq(tzinfo1, tzinfo2, startYear=2000, endYear=2020):
@@ -2217,4 +2226,4 @@ def tzinfo_eq(tzinfo1, tzinfo2, startYear=2000, endYear=2020):
 if __name__ == "__main__":
     import tests
 
-    tests._test()
+    tests._test()  # pylint: disable=protected-access

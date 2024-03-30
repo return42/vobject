@@ -44,6 +44,8 @@ class Behavior(object):
         Whether or not vCard style group prefixes are allowed.
     """
 
+    # pylint: disable=unused-argument
+
     name = ""
     description = ""
     versionString = ""
@@ -152,7 +154,6 @@ class Behavior(object):
         Default is to call base.defaultSerialize.
 
         """
-
         cls.generateImplicitParameters(obj)
         if validate:
             cls.validate(obj, raiseException=True)
