@@ -24,15 +24,18 @@ black: venv
 # the python interpreter.  To lint a py2 code base a Python 2 interpreter is
 # needed.
 
-# pylint in py3.x: all rules are taken from .pylintrc
+# pylint in py3.x: all rules are taken from .pylintrc, additional some options
+# disable to be py2 compatible
 pylint: venv
-	.venv/bin/python -m pylint --output-format=parseable ./vobject/ setup.py tests.py
+	.venv/bin/python -m pylint --output-format=parseable \
+		--disable=useless-option-value,redundant-u-string-prefix,unnecessary-pass,super-with-arguments \
+		./vobject/ setup.py tests.py
 
 # pylint in py2.7: addtional to the rules from .pylintrc disable messages which
 # are only relevant in python 3
 pylint2.7: venv2.7
 	.venv/bin/python -m pylint --output-format=parseable \
-		--disable=bad-continuation,superfluous-parens,old-style-class \
+		--disable=bad-option-value,bad-continuation,superfluous-parens,old-style-class \
 		./vobject/ setup.py tests.py
 
 venv: clean

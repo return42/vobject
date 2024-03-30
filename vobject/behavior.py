@@ -2,7 +2,7 @@ from . import base
 
 
 # ------------------------ Abstract class for behavior --------------------------
-class Behavior(object):
+class Behavior(object):  # pylint: disable=useless-object-inheritance
     """
     Behavior (validation, encoding, and transformations) for vobjects.
 

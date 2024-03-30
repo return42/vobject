@@ -12,7 +12,7 @@ import six
 # ------------------------------------ Python 2/3 compatibility challenges  ----
 # Python 3 no longer has a basestring type, so....
 try:
-    basestring = basestring  # pylint: disable=redefined-builtin
+    basestring = basestring  # pylint: disable=self-assigning-variable,redefined-builtin
 except NameError:
     basestring = (str, bytes)  # pylint: disable=redefined-builtin
 
@@ -25,7 +25,7 @@ try:
         """
         Return byte string with correct encoding
         """
-        if type(s) == unicode:
+        if type(s) == unicode:  # pylint: disable=unidiomatic-typecheck
             return s.encode("utf-8")
         return str(s)
 
@@ -41,7 +41,7 @@ except NameError:
 if not isinstance(b"", type("")):
     unicode_type = str
 else:
-    unicode_type = unicode  # noqa
+    unicode_type = unicode  # pylint: disable=undefined-variable
 
 
 def to_unicode(value):
@@ -89,7 +89,7 @@ SPACEORTAB = SPACE + TAB
 # --------------------------------- Main classes -------------------------------
 
 
-class VBase(object):
+class VBase(object):  # pylint: disable=useless-object-inheritance
     """
     Base class for ContentLine and Component.
 
@@ -201,7 +201,7 @@ class VBase(object):
             msg = "In transformToNative, unhandled exception on line {0}: {1}: {2}"
             msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
             msg = msg + " (" + str(self_orig) + ")"
-            raise ParseError(msg, lineNumber)
+            raise ParseError(msg, lineNumber)  # pylint: disable=raise-missing-from
 
     def transformFromNative(self):
         """
@@ -228,7 +228,7 @@ class VBase(object):
                     raise
                 msg = "In transformFromNative, unhandled exception on line {0} {1}: {2}"
                 msg = msg.format(lineNumber, sys.exc_info()[0], sys.exc_info()[1])
-                raise NativeError(msg, lineNumber)
+                raise NativeError(msg, lineNumber)  # pylint: disable=raise-missing-from
         else:
             return self
 
@@ -410,7 +410,7 @@ class ContentLine(VBase):
             raise AttributeError(name)
 
         except KeyError:
-            raise AttributeError(name)
+            raise AttributeError(name)  # pylint: disable=raise-missing-from
 
     def __setattr__(self, name, value):
         """
@@ -445,7 +445,7 @@ class ContentLine(VBase):
             else:
                 object.__delattr__(self, name)
         except KeyError:
-            raise AttributeError(name)
+            raise AttributeError(name)  # pylint: disable=raise-missing-from
 
     def valueRepr(self):
         """
@@ -560,7 +560,7 @@ class Component(VBase):
                 return self.contents[toVName(name, 5)]
             return self.contents[toVName(name)][0]
         except KeyError:
-            raise AttributeError(name)
+            raise AttributeError(name)  # pylint: disable=raise-missing-from
 
     normal_attributes = ["contents", "name", "behavior", "parentBehavior", "group"]
 
@@ -597,7 +597,7 @@ class Component(VBase):
             else:
                 object.__delattr__(self, name)
         except KeyError:
-            raise AttributeError(name)
+            raise AttributeError(name)  # pylint: disable=raise-missing-from
 
     def getChildValue(self, childName, default=None, childNumber=0):
         """
@@ -661,7 +661,7 @@ class Component(VBase):
         Return an iterable of all children.
         """
         for objList in self.contents.values():
-            for obj in objList:
+            for obj in objList:  # pylint: disable=use-yield-from
                 yield obj
 
     def components(self):

@@ -60,12 +60,12 @@ VObject requires Python 2.7 or higher, along with the [dateutil](https://pypi.py
 To run all tests, use:
 
 ```bash
-$ make venv test
+$ make venv test pylint
 ```
 To run the Python 2.7 test use:
 
 ```bash
-$ make clean venv2.7 test
+$ make clean venv2.7 test pylint2.7
 ```
 
 

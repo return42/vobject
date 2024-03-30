@@ -11,7 +11,7 @@ from .icalendar import stringToTextValues
 # ------------------------ vCard structs ---------------------------------------
 
 
-class Name(object):
+class Name(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, family="", given="", additional="", prefix="", suffix=""):
         """
         Each name attribute can be a string or a list of strings.
@@ -52,7 +52,7 @@ class Name(object):
             return False
 
 
-class Address(object):
+class Address(object):  # pylint: disable=useless-object-inheritance
     def __init__(
         self, street="", city="", region="", code="", country="", box="", extended=""
     ):

@@ -4,7 +4,7 @@ Compare VTODOs and VEVENTs in two iCalendar sources.
 
 from __future__ import print_function
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 
 from .base import Component, newFromBehavior, readOne
 
@@ -185,6 +185,7 @@ def main():
     if args:
         ignore_dtstamp = options.ignore
         ics_file1, ics_file2 = args
+        # pylint: disable=unspecified-encoding
         with open(ics_file1) as f, open(ics_file2) as g:
             cal1 = readOne(f)
             cal2 = readOne(g)

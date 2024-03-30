@@ -40,11 +40,11 @@ def get_test_file(path):
     filepath = "test_files/{}".format(path)
     if sys.version_info[0] < 3:
         # On python 2, this library operates on bytes.
-        f = open(filepath, "r")
+        f = open(filepath, "r")  # pylint: disable=unspecified-encoding
     else:
         # On python 3, it operates on unicode. We need to specify an encoding
         # for systems for which the preferred encoding isn't utf-8 (e.g windows)
-        f = open(filepath, "r", encoding="utf-8")
+        f = open(filepath, "r", encoding="utf-8")  # pylint: disable=consider-using-with
     text = f.read()
     f.close()
     return text
@@ -717,6 +717,7 @@ class TestIcalendar(unittest.TestCase):
         Serializing with timezones from pytz test
         """
         try:
+            # pylint: disable=import-outside-toplevel
             import pytz
         except ImportError:
             return self.skipTest("pytz not installed")  # NOQA
@@ -884,6 +885,7 @@ class TestChangeTZ(unittest.TestCase):
     Tests for change_tz.change_tz
     """
 
+    # pylint: disable=useless-object-inheritance
     class StubCal(object):
         class StubEvent(object):
             class Node(object):

@@ -1,6 +1,6 @@
 """Translate an ics file's events to a different timezone."""
 
-from optparse import OptionParser
+from optparse import OptionParser  # pylint: disable=deprecated-module
 from datetime import datetime
 from vobject import icalendar, base
 
@@ -56,6 +56,7 @@ def main():
         else:
             timezone = PyICU.ICUtzinfo.default
         print("... Reading {0!s}".format(ics_file))
+        # pylint: disable=unspecified-encoding, consider-using-with
         cal = base.readOne(open(ics_file))
         change_tz(cal, timezone, PyICU.ICUtzinfo.default, utc_only)
 
@@ -98,7 +99,7 @@ def get_options():
     (cmdline_options, args) = parser.parse_args()
     if not args and not cmdline_options.list:
         print("error: too few arguments given")
-        print
+        print  # pylint: disable=pointless-statement
         print(parser.format_help())
         return False, False
 

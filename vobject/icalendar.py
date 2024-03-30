@@ -1,6 +1,8 @@
 """Definitions and behavior for iCalendar, also known as vCalendar 2.0"""
 
+# pylint: disable=unknown-option-value
 # pylint: disable=deprecated-lambda, too-many-lines
+# pylint: enable=unknown-option-value
 
 from __future__ import print_function
 
@@ -86,6 +88,7 @@ def getTzid(tzid, smart=True):
     tz = __tzidMap.get(toUnicode(tzid), None)  # pylint: disable=redefined-outer-name
     if smart and tzid and not tz:
         try:
+            # pylint: disable=import-outside-toplevel
             from pytz import timezone, UnknownTimeZoneError
 
             try:
@@ -494,6 +497,8 @@ class RecurringComponent(Component):
                         # of dtstart
                         if ignoretz:
                             raise
+                        # WARN: py2 does not have datetime.timezone !!
+                        # pylint: disable=no-member
                         utc_now = datetime.datetime.now(datetime.timezone.utc)
                         until = rrule.rrulestr(value, dtstart=utc_now)._until
 
@@ -1621,7 +1626,7 @@ class Trigger(behavior.Behavior):
                         "TRIGGER with no VALUE not recognized as DURATION "
                         "or as DATE-TIME"
                     )
-                    raise ParseError(msg)
+                    raise ParseError(msg)  # pylint: disable=raise-missing-from
         elif value == "DATE-TIME":
             # TRIGGERs with DATE-TIME values must be in UTC, we could validate
             # that fact, for now we take it on faith.
@@ -1875,6 +1880,7 @@ def stringToDateTime(s, tzinfo=None):
             if s[15] == "Z":
                 tzinfo = getTzid("UTC")
     except:
+        # pylint: disable=raise-missing-from
         raise ParseError("'{0!s}' is not a valid DATE-TIME".format(s))
     year = year if year else 2000
     if tzinfo is not None and hasattr(tzinfo, "localize"):  # PyTZ case

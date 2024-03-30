@@ -1,3 +1,8 @@
+# WARN: this module is not py3 compatible !!!
+# - xrange is gone in py3
+#
+# pylint: disable=undefined-variable
+
 import struct
 import datetime
 import _winreg  # pylint: disable=import-error
@@ -78,6 +83,7 @@ class win32tz(datetime.tzinfo):
         )
         if dston < dstoff:
             return dston <= dt.replace(tzinfo=None) < dstoff
+        # pylint: disable=superfluous-parens
         return not (dstoff <= dt.replace(tzinfo=None) < dston)
 
     def __repr__(self):
@@ -96,7 +102,7 @@ def pickNthWeekday(year, month, dayofweek, hour, minute, whichweek):
     return dt
 
 
-class win32tz_data(object):
+class win32tz_data(object):  # pylint: disable=useless-object-inheritance
     """Read a registry key for a timezone, expose its contents."""
 
     def __init__(self, path):
@@ -166,6 +172,7 @@ def valuesToDict(key):
 
 
 def _test():
+    # pylint: disable=import-outside-toplevel,import-error
     import doctest
     import win32tz  # pylint: disable=redefined-outer-name, import-self
 
