@@ -1034,7 +1034,7 @@ class VCalendar2_0(VCalendarComponentBehavior):
                 if getattr(obj, "tzid_param", None):
                     table[obj.tzid_param] = 1
                 else:
-                    if type(obj.value) == list:
+                    if isinstance(obj.value, list):
                         for _ in obj.value:
                             tzinfo = getattr(obj.value, "tzinfo", None)
                             tzid = TimezoneComponent.registerTzinfo(tzinfo)
