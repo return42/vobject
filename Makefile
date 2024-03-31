@@ -7,18 +7,21 @@ clean:
 	rm -rf .venv
 
 # HINT:
-# - black is not supported in py2!
+# - black is not supported in py2 and py3.7 support stopped in black v23.7.0
+#   https://github.com/psf/black/blob/main/CHANGES.md#2370
 # - option --skip-string-normalization protects (among other things),
 #   against deleting the unicode prefix in Python 2
 
-black: venv
-	.venv/bin/python -m pip install --upgrade black
-	- .venv/bin/python -m black --skip-string-normalization --check --diff .
+format: venv
+	- .venv/bin/python -m black --skip-string-normalization .
 	@echo "\n"
 	@echo "WARNING:"
 	@echo "  Not all modifications from black are compatible to Python v2.x !!!"
-	@echo "  Don't merge patches of Python-2 unicode like: u'lorem ..' --> 'lorem ..'"
+	@echo "  E.g. don't merge patches of Python-2 unicode like: u'lorem ..' --> 'lorem ..'"
 	@echo "\n"
+
+black: venv
+	.venv/bin/python -m black --skip-string-normalization --check --diff .
 
 # HINT: pylint uses the AST (https://docs.python.org/3/library/ast.html) from
 # the python interpreter.  To lint a py2 code base a Python 2 interpreter is
@@ -33,6 +36,7 @@ pylint: venv
 
 # pylint in py2.7: addtional to the rules from .pylintrc disable messages which
 # are only relevant in python 3
+# Latest pylint version for py2 is pylint v1.9.5
 pylint2.7: venv2.7
 	.venv/bin/python -m pylint --output-format=parseable \
 		--disable=bad-option-value,bad-continuation,superfluous-parens,old-style-class \

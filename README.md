@@ -57,16 +57,19 @@ VObject requires Python 2.7 or higher, along with the [dateutil](https://pypi.py
 
 # Running tests
 
-To run all tests, use:
+To format code and run all tests before creating a git-commit, use:
 
 ```bash
-$ make venv test pylint
+$ make format pylint test
 ```
 To run the Python 2.7 test use:
 
 ```bash
 $ make clean venv2.7 test pylint2.7
 ```
+
+> [!CAUTION]
+> A python runtime that has [not yet reached EOL](https://endoflife.date/python) is required for development and testing!
 
 
 ## Python 2.7

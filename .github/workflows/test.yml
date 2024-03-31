@@ -17,4 +17,12 @@ jobs:
           make venv
       - name: Run Tests
         run: |
-          make test
+          case ${{ matrix.python-version }} in
+              3.7)
+                  echo "WARNING: skip pylint and black test in python 3.7"
+                  make test
+                  ;;
+              *)
+                  make black pylint test
+                  ;;
+          esac
