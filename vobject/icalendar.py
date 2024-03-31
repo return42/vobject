@@ -2228,10 +2228,3 @@ def tzinfo_eq(tzinfo1, tzinfo2, startYear=2000, endYear=2020):
             if t1 != t2 or not dt_test(t1):
                 return False
     return True
-
-
-# ------------------- Testing and running functions ----------------------------
-if __name__ == "__main__":
-    import tests
-
-    tests._test()  # pylint: disable=protected-access
