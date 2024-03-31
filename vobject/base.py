@@ -111,7 +111,13 @@ class VBase(object):  # pylint: disable=useless-object-inheritance
     name = ""
     encoded = False
 
-    def __init__(self, group=None, *args, **kwds):
+    def __init__(
+        # pylint: disable=keyword-arg-before-vararg
+        self,
+        group=None,
+        *args,
+        **kwds
+    ):
         super(VBase, self).__init__(*args, **kwds)
         self.group = group
         self.behavior = None
@@ -245,7 +251,14 @@ class VBase(object):  # pylint: disable=useless-object-inheritance
         pass
 
     def serialize(
-        self, buf=None, lineLength=75, validate=True, behavior=None, *args, **kwargs
+        # pylint: disable=keyword-arg-before-vararg
+        self,
+        buf=None,
+        lineLength=75,
+        validate=True,
+        behavior=None,
+        *args,
+        **kwargs
     ):
         """
         Serialize to buf if it exists, otherwise return a string.
@@ -308,6 +321,7 @@ class ContentLine(VBase):
     """
 
     def __init__(
+        # pylint: disable=keyword-arg-before-vararg
         self,
         name,
         params,
@@ -499,7 +513,13 @@ class Component(VBase):
         be serialized.
     """
 
-    def __init__(self, name=None, *args, **kwds):
+    def __init__(
+        # pylint: disable=keyword-arg-before-vararg
+        self,
+        name=None,
+        *args,
+        **kwds
+    ):
         super(Component, self).__init__(*args, **kwds)
         self.contents = {}
         if name:

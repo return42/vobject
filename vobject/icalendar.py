@@ -122,7 +122,13 @@ class TimezoneComponent(Component):
         The string used to refer to this timezone.
     """
 
-    def __init__(self, tzinfo=None, *args, **kwds):
+    def __init__(
+        # pylint: disable=keyword-arg-before-vararg
+        self,
+        tzinfo=None,
+        *args,
+        **kwds
+    ):
         """
         Accept an existing Component or a tzinfo class.
         """
@@ -1061,7 +1067,14 @@ class VCalendar2_0(VCalendarComponentBehavior):
                 obj.add(TimezoneComponent(tzinfo=getTzid(tzid)))
 
     @classmethod
-    def serialize(cls, obj, buf, lineLength, validate=True):
+    def serialize(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        buf,
+        lineLength,
+        validate=True,
+    ):
         """
         Set implicit parameters, do encoding, return unicode string.
 
@@ -1157,7 +1170,13 @@ class VTimezone(VCalendarComponentBehavior):
     }
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         if not hasattr(obj, "tzid") or obj.tzid.value is None:
             if raiseException:
                 m = "VTIMEZONE components must contain a valid TZID"
@@ -1263,7 +1282,13 @@ class VEvent(RecurringBehavior):
     }
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         if "dtend" in obj.contents and "duration" in obj.contents:
             if raiseException:
                 m = "VEVENT components cannot contain both DTEND and DURATION\
@@ -1323,7 +1348,13 @@ class VTodo(RecurringBehavior):
     }
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         if "due" in obj.contents and "duration" in obj.contents:
             if raiseException:
                 m = "VTODO components cannot contain both DUE and DURATION\
@@ -1434,7 +1465,14 @@ class VAlarm(VCalendarComponentBehavior):
             obj.add("trigger").value = datetime.timedelta(0)
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):  # pylint: disable=unused-argument
+    def validate(
+        # pylint: disable=arguments-differ
+        # pylint: disable=unused-argument
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         """
         # TODO
         if obj.contents.has_key('dtend') and obj.contents.has_key('duration'):
@@ -1482,7 +1520,13 @@ class VAvailability(VCalendarComponentBehavior):
     }
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         if "dtend" in obj.contents and "duration" in obj.contents:
             if raiseException:
                 m = "VAVAILABILITY components cannot contain both DTEND and DURATION components"
@@ -1522,7 +1566,13 @@ class Available(RecurringBehavior):
     }
 
     @classmethod
-    def validate(cls, obj, raiseException, *args):
+    def validate(
+        # pylint: disable=arguments-differ
+        cls,
+        obj,
+        raiseException,
+        *args
+    ):
         has_dtend = "dtend" in obj.contents
         has_duration = "duration" in obj.contents
         if has_dtend and has_duration:

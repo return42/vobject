@@ -146,7 +146,16 @@ class Behavior(object):  # pylint: disable=useless-object-inheritance
         pass
 
     @classmethod
-    def serialize(cls, obj, buf, lineLength, validate=True, *args, **kwargs):
+    def serialize(
+        # pylint: disable=keyword-arg-before-vararg
+        cls,
+        obj,
+        buf,
+        lineLength,
+        validate=True,
+        *args,
+        **kwargs
+    ):
         """
         Set implicit parameters, do encoding, return unicode string.
 

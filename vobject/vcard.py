@@ -243,7 +243,16 @@ class Photo(VCardTextBehavior):
         return " (BINARY PHOTO DATA at 0x{0!s}) ".format(id(line.value))
 
     @classmethod
-    def serialize(cls, obj, buf, lineLength, validate, *args, **kwargs):
+    def serialize(
+        # pylint: disable=signature-differs
+        cls,
+        obj,
+        buf,
+        lineLength,
+        validate,
+        *args,
+        **kwargs
+    ):
         """
         Apple's Address Book is *really* weird with images, it expects
         base64 data to have very specific whitespace.  It seems Address Book
