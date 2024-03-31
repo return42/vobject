@@ -472,9 +472,10 @@ class RecurringComponent(Component):
                         return None
 
                 if name in DATENAMES:
-                    if type(line.value[0]) == datetime.datetime:
+                    # pylint: disable=unidiomatic-typecheck
+                    if type(line.value[0]) is datetime.datetime:
                         list(map(addfunc, line.value))
-                    elif type(line.value[0]) == datetime.date:
+                    elif type(line.value[0]) is datetime.date:
                         for dt in line.value:
                             addfunc(datetime.datetime(dt.year, dt.month, dt.day))
                     else:
@@ -887,7 +888,8 @@ class DateOrDateTimeBehavior(behavior.Behavior):
         """
         Replace the date or datetime in obj.value with an ISO 8601 string.
         """
-        if type(obj.value) == datetime.date:
+        # pylint: disable=unidiomatic-typecheck
+        if type(obj.value) is datetime.date:
             obj.isNative = False
             obj.value_param = "DATE"
             obj.value = dateToString(obj.value)
@@ -932,7 +934,8 @@ class MultiDateBehavior(behavior.Behavior):
         Replace the date, datetime or period tuples in obj.value with
         appropriate strings.
         """
-        if obj.value and type(obj.value[0]) == datetime.date:
+        # pylint: disable=unidiomatic-typecheck
+        if obj.value and type(obj.value[0]) is datetime.date:
             obj.isNative = False
             obj.value_param = "DATE"
             obj.value = ",".join([dateToString(val) for val in obj.value])
@@ -944,7 +947,8 @@ class MultiDateBehavior(behavior.Behavior):
             transformed = []
             tzid = None
             for val in obj.value:
-                if tzid is None and type(val) == datetime.datetime:
+                # pylint: disable=unidiomatic-typecheck
+                if tzid is None and type(val) is datetime.datetime:
                     tzid = TimezoneComponent.registerTzinfo(val.tzinfo)
                     if tzid is not None:
                         obj.tzid_param = tzid
@@ -1636,10 +1640,10 @@ class Trigger(behavior.Behavior):
 
     @staticmethod
     def transformFromNative(obj):
-        if type(obj.value) == datetime.datetime:
+        if isinstance(obj.value, datetime.date):
             obj.value_param = "DATE-TIME"
             return UTCDateTimeBehavior.transformFromNative(obj)
-        if type(obj.value) == datetime.timedelta:
+        if isinstance(obj.value, datetime.timedelta):
             return Duration.transformFromNative(obj)
         raise NativeError("Native TRIGGER values must be timedelta or datetime")
 

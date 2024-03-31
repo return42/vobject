@@ -77,10 +77,11 @@ class HCalendar(VCalendar2_0):
             # DTSTART
             dtstart = event.getChildValue("dtstart")
             if dtstart:
-                if type(dtstart) == date:
+                # pylint: disable=unidiomatic-typecheck
+                if type(dtstart) is date:
                     timeformat = "%A, %B %e"
                     machine = "%Y%m%d"
-                elif type(dtstart) == datetime:
+                elif type(dtstart) is datetime:
                     timeformat = "%A, %B %e, %H:%M"
                     machine = "%Y%m%dT%H%M%S%z"
 
