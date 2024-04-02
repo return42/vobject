@@ -79,6 +79,8 @@ VObject Overview
 from .base import newFromBehavior, readOne, readComponents
 from . import icalendar, vcard
 
+__version__ = "0.9.8"
+
 
 def iCalendar():
     return newFromBehavior("vcalendar", "2.0")

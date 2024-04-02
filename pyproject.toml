@@ -1,0 +1,188 @@
+[build-system]
+
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+
+name = "vobject"
+requires-python = ">=2.7"
+dependencies = [
+    "python-dateutil >=2.4.0",
+    "six >=1.16.0",
+]
+
+dynamic = ["version"]
+description = "A full-featured Python package for parsing and creating iCalendar and vCard files"
+readme = "README.md"
+license = {file = "LICENSE-2.0.txt"}
+
+authors = [
+    { name = "Jeffrey Harris", email = "jeffrey@osafoundation.org" },
+]
+
+maintainers = [
+    { name = "David Arnold", email = "davida@pobox.com" },
+]
+
+keywords = [
+    "hcalendar",
+    "icalendar",
+    "ics",
+    "vcard",
+    "vcs",
+    "vobject",
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Text Processing",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.urls]
+
+Homepage = "https://py-vobject.github.io"
+Repository = "https://github.com/py-vobject/vobject"
+Issues = "https://github.com/py-vobject/vobject/issues"
+Changelog = "https://github/com/py-vobject/vobject/blob/master/CHANGELOG.md"
+
+[project.scripts]
+
+change_tz = "vobject.change_tz:main"
+ics_diff = "vobject.ics_diff:main"
+
+[tool.hatch.version]
+
+path = "vobject/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+
+include = [
+    "/vobject",
+]
+
+[tool.hatch.envs.default]
+
+dependencies = [
+  "black ==24.3.0;      python_version >='3.8'",
+  "coverage;            python_version >='2.7'",
+  "pylint ==1.9.5;      python_version <'3.7'",
+  "pylint ==3.1.0;      python_version >='3.8'",
+]
+
+[[tool.hatch.envs.default.matrix]]
+
+python = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+
+[tool.hatch.envs.default.scripts]
+
+quality-gate = [
+    "black",
+    "test",
+    "pylint",
+]
+
+format = "python -m black --skip-string-normalization ."
+black = "python -m black --skip-string-normalization --check --diff ."
+test = "python tests.py"
+pylint = '''
+python -m pylint \
+  --output-format=parseable \
+  --disable=useless-option-value,redundant-u-string-prefix,unnecessary-pass,super-with-arguments \
+  ./vobject/ tests.py
+'''
+
+# dev environment for local tasks
+# ===============================
+
+[tool.hatch.envs.dev]
+python = "3.12"
+
+[tool.hatch.envs.dev.scripts]
+pre-commit = [
+    "format",
+    "test",
+    "pylint",
+]
+
+
+# Python 3.7
+# ==========
+
+[tool.hatch.envs.py37]
+
+quality-gate = [
+    "test",
+    "pylint",
+]
+
+[tool.hatch.envs.py37.scripts]
+format = 'echo "skip formating code in Python 3.7"'
+black = 'echo "skip formating code in Python 3.7"'
+
+
+# Python 2.7
+# ==========
+
+[tool.hatch.envs.py27]
+detached = true
+
+[tool.hatch.envs.py27.scripts]
+
+quality-gate = [
+   "venv27",
+   "pylint",
+   "test",
+   "clean",
+]
+
+format = 'echo "skip formating code in Python 2.7"'
+black = 'echo "skip formating code in Python 2.7"'
+help = """
+cat  <<EOF
+To run py27.scripts a python2 and a virtualenv installation is needed::
+
+  $ sudo apt install python2
+  $ curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
+  $ python2 get-pip.py
+
+  $ python2 -m pip --version
+  pip 20.3.4 from ~/.local/lib/python2.7/site-packages/pip (python 2.7)
+
+  $ python2 -m pip install --upgrade pip virtualenv
+  $ python2 -m virtualenv --version
+  virtualenv 20.15.1 from ~/.local/lib/python2.7/site-packages/virtualenv/__init__.pyc
+
+EOF
+"""
+
+venv27 = """
+python2 -m virtualenv .venv27
+.venv27/bin/python -m pip install 'python-dateutil >=2.4.0' 'six >=1.16.0' 'pylint ==1.9.5'
+.venv27/bin/python -m pip install -e .
+"""
+
+clean = "rm -rf .venv27"
+
+test = ".venv27/bin/python tests.py"
+
+pylint = """
+.venv27/bin/python -m pylint \
+  --output-format=parseable \
+  --disable=bad-option-value,bad-continuation,superfluous-parens,old-style-class \
+  ./vobject/ setup.py tests.py
+"""
