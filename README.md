@@ -55,14 +55,33 @@ python setup.py install
 VObject requires Python 2.7 or higher, along with the [dateutil](https://pypi.python.org/pypi/python-dateutil/) and [six](https://pypi.python.org/pypi/six) packages.
 
 
-# Running tests
+# Development
 
-To run all tests, use:
+For the development we use the project management tool [Hatch](https://hatch.pypa.io).  If it is not already installed, it can be installed very easily on all systems using the [instructions](https://hatch.pypa.io/latest/install/).
 
+Before commit into git, assure your patch will pass the quality gate / at least you should check your code by using this command:
+
+```shell
+$ hatch run dev:pre-commit
 ```
-python tests.py
+
+With Hatch it is possible to run through a test matrix:
+
+```shell
+$ hatch run quality-gate
 ```
 
+To get an overview of available environments use:
+
+```shell
+$ hatch env show
+```
+
+To test with Python 2, a `python2` runtime is needed, to get help use:
+
+```shell
+$ hatch run py27:help
+```
 
 # Usage
 
